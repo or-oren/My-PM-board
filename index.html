@@ -1,0 +1,1139 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Product Manager Board</title>
+  <style>
+    :root {
+      --text: #203135;
+      --muted: #66777b;
+      --line: #d6e1e3;
+      --todo: #f3f5f7;
+      --progress: #ddf4ff;
+      --done: #dcf7e7;
+      --button: #146c75;
+      --button-soft: #edf8f9;
+      --critical: #d83f4d;
+      --mid: #b77900;
+      --low: #17824f;
+      --focus: #1098ad;
+      --coral: #f26d5b;
+      --yellow: #ffd166;
+      --mint: #48bf84;
+      --shadow: 0 14px 34px rgba(32, 49, 53, 0.14);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      color: var(--text);
+      background:
+        linear-gradient(180deg, #f2fbfc 0, #ffffff 220px),
+        #ffffff;
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.45;
+    }
+
+    button, input, select, textarea {
+      font: inherit;
+      letter-spacing: 0;
+    }
+
+    button {
+      border: 1px solid var(--button);
+      border-radius: 8px;
+      color: #ffffff;
+      background: var(--button);
+      cursor: pointer;
+      min-height: 38px;
+      padding: 8px 12px;
+      transition: transform 140ms ease, background 140ms ease, border-color 140ms ease;
+    }
+
+    button:hover { transform: translateY(-1px); }
+
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible {
+      outline: 3px solid rgba(36, 119, 168, 0.22);
+      border-color: var(--focus);
+    }
+
+    .ghost-button {
+      color: var(--text);
+      background: var(--button-soft);
+      border-color: var(--line);
+    }
+
+    .accent-button {
+      background: var(--coral);
+      border-color: var(--coral);
+      color: #ffffff;
+    }
+
+    .danger-button {
+      background: #9b2d2d;
+      border-color: #9b2d2d;
+    }
+
+    .page {
+      width: min(1480px, 100%);
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .topbar {
+      display: grid;
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+
+    .title-row, .card-top, .card-actions, .meta-row, .archive-top {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-mark {
+      width: 54px;
+      height: 54px;
+      border: 2px solid #ffffff;
+      border-radius: 8px;
+      object-fit: cover;
+      background: #f8fafb;
+      box-shadow: var(--shadow);
+    }
+
+    h1, h2, h3, p { margin: 0; }
+    h1 { font-size: 28px; line-height: 1.15; }
+    .subtitle { color: var(--muted); margin-top: 5px; }
+
+    .toolbar, .task-form, .category-form, .action-strip {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      align-items: end;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.92);
+      box-shadow: 0 10px 24px rgba(32, 49, 53, 0.08);
+    }
+
+    .action-strip {
+      align-items: center;
+      background: linear-gradient(90deg, #ffffff, #effbfc);
+    }
+
+    .action-copy {
+      grid-column: span 7;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .action-buttons {
+      grid-column: span 5;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .collapsible-panel[hidden] {
+      display: none;
+    }
+
+    .field { display: grid; gap: 6px; }
+
+    .field label {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      min-height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--text);
+      background: #ffffff;
+      padding: 8px 10px;
+    }
+
+    textarea {
+      min-height: 82px;
+      resize: vertical;
+    }
+
+    .span-2 { grid-column: span 2; }
+    .span-3 { grid-column: span 3; }
+    .span-4 { grid-column: span 4; }
+    .span-5 { grid-column: span 5; }
+    .span-6 { grid-column: span 6; }
+    .span-8 { grid-column: span 8; }
+    .span-12 { grid-column: span 12; }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      align-items: start;
+    }
+
+    .column {
+      display: grid;
+      gap: 12px;
+      min-height: 420px;
+      border: 1px solid rgba(32, 49, 53, 0.12);
+      border-radius: 8px;
+      padding: 14px;
+      box-shadow: 0 12px 26px rgba(32, 49, 53, 0.08);
+      transition: border-color 140ms ease, box-shadow 140ms ease;
+    }
+
+    .column[data-status="todo"] { background: var(--todo); }
+    .column[data-status="progress"] { background: var(--progress); }
+    .column[data-status="done"] { background: var(--done); }
+
+    .column.drag-over {
+      border-color: var(--focus);
+      box-shadow: inset 0 0 0 2px rgba(36, 119, 168, 0.22);
+    }
+
+    .column-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .column-title { font-size: 18px; }
+
+    .column[data-status="todo"] .column-title { border-bottom: 4px solid #94a3b8; }
+    .column[data-status="progress"] .column-title { border-bottom: 4px solid #23a6d5; }
+    .column[data-status="done"] .column-title { border-bottom: 4px solid var(--mint); }
+
+    .count {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.78);
+      border: 1px solid var(--line);
+      font-weight: 700;
+    }
+
+    .task-list {
+      display: grid;
+      align-content: start;
+      gap: 10px;
+      min-height: 300px;
+    }
+
+    .task-card {
+      display: grid;
+      gap: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      background: #ffffff;
+      box-shadow: 0 8px 18px rgba(38, 48, 51, 0.09);
+      border-top: 5px solid var(--yellow);
+    }
+
+    .task-card[data-urgency="Low"] { border-top-color: var(--mint); }
+    .task-card[data-urgency="Mid"] { border-top-color: var(--yellow); }
+    .task-card[data-urgency="Critical"] { border-top-color: var(--coral); }
+
+    .task-card[draggable="true"] { cursor: grab; }
+    .task-card.dragging { opacity: 0.55; }
+
+    .task-title {
+      font-weight: 800;
+      overflow-wrap: anywhere;
+    }
+
+    .task-description {
+      color: var(--muted);
+      overflow-wrap: anywhere;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      border: 1px solid rgba(32, 49, 53, 0.1);
+      border-radius: 8px;
+      padding: 4px 8px;
+      background: #f7fcfd;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .urgency-low { color: var(--low); }
+    .urgency-mid { color: var(--mid); }
+    .urgency-critical { color: var(--critical); }
+    .status-select { min-width: 132px; }
+
+    .small-button {
+      min-height: 32px;
+      padding: 5px 9px;
+      font-size: 13px;
+    }
+
+    .jira-link {
+      color: #1f6f98;
+      font-weight: 700;
+      text-decoration: none;
+      overflow-wrap: anywhere;
+    }
+
+    .jira-link:hover { text-decoration: underline; }
+
+    .empty-state {
+      display: grid;
+      place-items: center;
+      min-height: 120px;
+      border: 1px dashed rgba(103, 113, 116, 0.45);
+      border-radius: 8px;
+      color: var(--muted);
+      text-align: center;
+      padding: 16px;
+      background: rgba(255, 255, 255, 0.55);
+    }
+
+    .archive-panel {
+      display: grid;
+      gap: 10px;
+      margin-top: 2px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(103, 113, 116, 0.3);
+    }
+
+    .archive-list[hidden] { display: none; }
+
+    .dialog-backdrop {
+      position: fixed;
+      inset: 0;
+      display: none;
+      place-items: center;
+      padding: 18px;
+      background: rgba(38, 48, 51, 0.42);
+      z-index: 20;
+    }
+
+    .dialog-backdrop.open { display: grid; }
+
+    .dialog {
+      width: min(780px, 100%);
+      max-height: calc(100vh - 36px);
+      overflow: auto;
+      border-radius: 8px;
+      background: #ffffff;
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+
+    .dialog-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .dialog-form {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .comments {
+      display: grid;
+      gap: 8px;
+      max-height: 190px;
+      overflow: auto;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfc;
+    }
+
+    .comment {
+      display: grid;
+      gap: 2px;
+      padding: 8px;
+      border-radius: 8px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+    }
+
+    .comment time {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .dialog-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    .screen-reader {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @media (max-width: 980px) {
+      .board { grid-template-columns: 1fr; }
+      .column { min-height: auto; }
+      .toolbar, .task-form, .category-form, .dialog-form, .action-strip { grid-template-columns: 1fr; }
+      .action-copy, .action-buttons { grid-column: span 1; }
+      .action-buttons { justify-content: stretch; }
+      .action-buttons > * { flex: 1; }
+      .span-2, .span-3, .span-4, .span-5, .span-6, .span-8, .span-12 {
+        grid-column: span 1;
+      }
+    }
+
+    @media (max-width: 620px) {
+      .page { padding: 16px; }
+      h1 { font-size: 24px; }
+      .title-row, .card-actions, .meta-row, .archive-top { align-items: stretch; }
+      .title-row > *, .card-actions > *, .meta-row > *, .archive-top > * { width: 100%; }
+      .brand { align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="topbar" aria-labelledby="page-title">
+      <div class="title-row">
+        <div class="brand">
+          <img class="brand-mark" alt="" aria-hidden="true" src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2048%2048'%3E%3Crect%20width='48'%20height='48'%20fill='%23ffffff'/%3E%3Crect%20x='8'%20y='10'%20width='9'%20height='28'%20rx='2'%20fill='%23f0f2f3'%20stroke='%23d9e0e2'/%3E%3Crect%20x='20'%20y='10'%20width='9'%20height='28'%20rx='2'%20fill='%23e4f3fb'%20stroke='%23d9e0e2'/%3E%3Crect%20x='32'%20y='10'%20width='8'%20height='28'%20rx='2'%20fill='%23e5f6e9'%20stroke='%23d9e0e2'/%3E%3Ccircle%20cx='12.5'%20cy='16'%20r='1.8'%20fill='%23263033'/%3E%3Ccircle%20cx='24.5'%20cy='22'%20r='1.8'%20fill='%23263033'/%3E%3Ccircle%20cx='36'%20cy='28'%20r='1.8'%20fill='%23263033'/%3E%3C/svg%3E">
+          <div>
+            <h1 id="page-title">Product Manager Board</h1>
+            <p class="subtitle">Track tasks, Jira links, updates, and archived Done work.</p>
+          </div>
+        </div>
+        <div class="action-buttons">
+          <button type="button" id="toggleTaskFormButton" class="accent-button">New task</button>
+          <button type="button" id="toggleCategoryFormButton" class="ghost-button">Add category</button>
+        </div>
+      </div>
+
+      <div class="toolbar" aria-label="Search and filters">
+        <div class="field span-6">
+          <label for="searchInput">Search task</label>
+          <input id="searchInput" type="search" placeholder="Search title, description, Jira, comments">
+        </div>
+        <div class="field span-3">
+          <label for="categoryFilter">Filter category</label>
+          <select id="categoryFilter"></select>
+        </div>
+        <div class="field span-2">
+          <label for="urgencyFilter">Filter urgency</label>
+          <select id="urgencyFilter">
+            <option value="all">All urgencies</option>
+            <option value="Low">Low</option>
+            <option value="Mid">Mid</option>
+            <option value="Critical">Critical</option>
+          </select>
+        </div>
+        <button type="button" id="resetFiltersButton" class="ghost-button span-1">Reset</button>
+      </div>
+
+      <div class="action-strip">
+        <p class="action-copy">Task flow</p>
+        <div class="action-buttons">
+          <button type="button" id="toggleTaskFormButtonBottom" class="accent-button">New task</button>
+          <button type="button" id="toggleCategoryFormButtonBottom" class="ghost-button">Add category</button>
+        </div>
+      </div>
+
+      <form id="taskForm" class="task-form collapsible-panel" hidden>
+        <div class="field span-3">
+          <label for="taskTitle">Title</label>
+          <input id="taskTitle" name="title" type="text" required maxlength="120" placeholder="Task title">
+        </div>
+        <div class="field span-5">
+          <label for="taskDescription">Description</label>
+          <input id="taskDescription" name="description" type="text" maxlength="300" placeholder="Short description">
+        </div>
+        <div class="field span-2">
+          <label for="taskCategory">Category</label>
+          <select id="taskCategory" name="category" required></select>
+        </div>
+        <div class="field span-2">
+          <label for="taskUrgency">Urgency</label>
+          <select id="taskUrgency" name="urgency">
+            <option value="Low">Low</option>
+            <option value="Mid">Mid</option>
+            <option value="Critical">Critical</option>
+          </select>
+        </div>
+        <div class="field span-5">
+          <label for="taskJira">Jira URL</label>
+          <input id="taskJira" name="jiraUrl" type="text" inputmode="url" placeholder="https://jira.example.com/browse/ABC-123">
+        </div>
+        <div class="field span-3">
+          <label for="taskStatus">Status</label>
+          <select id="taskStatus" name="status">
+            <option value="todo">To-Do</option>
+            <option value="progress">In-progress</option>
+            <option value="done">Done</option>
+          </select>
+        </div>
+        <button class="span-4" type="submit">Add task</button>
+      </form>
+
+      <form id="categoryForm" class="category-form collapsible-panel" hidden>
+        <div class="field span-8">
+          <label for="newCategory">Add category</label>
+          <input id="newCategory" name="category" type="text" maxlength="60" placeholder="New category name">
+        </div>
+        <button class="span-4" type="submit">Add category</button>
+      </form>
+
+    </section>
+
+    <section class="board" aria-label="Task board">
+      <section class="column" data-status="todo" aria-labelledby="todo-title">
+        <div class="column-header">
+          <h2 class="column-title" id="todo-title">To-Do</h2>
+          <span class="count" id="todoCount">0</span>
+        </div>
+        <div class="task-list" id="todoList" data-status="todo"></div>
+      </section>
+
+      <section class="column" data-status="progress" aria-labelledby="progress-title">
+        <div class="column-header">
+          <h2 class="column-title" id="progress-title">In-progress</h2>
+          <span class="count" id="progressCount">0</span>
+        </div>
+        <div class="task-list" id="progressList" data-status="progress"></div>
+      </section>
+
+      <section class="column" data-status="done" aria-labelledby="done-title">
+        <div class="column-header">
+          <h2 class="column-title" id="done-title">Done</h2>
+          <span class="count" id="doneCount">0</span>
+        </div>
+        <div class="task-list" id="doneList" data-status="done"></div>
+        <div class="archive-panel">
+          <div class="archive-top">
+            <strong>Archived Done</strong>
+            <button type="button" id="toggleArchiveButton" class="ghost-button small-button">Show archived</button>
+          </div>
+          <div class="task-list archive-list" id="archiveList" hidden></div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <div class="dialog-backdrop" id="editDialog" role="dialog" aria-modal="true" aria-labelledby="editTitle">
+    <div class="dialog">
+      <div class="dialog-header">
+        <h2 id="editTitle">Edit task</h2>
+        <button type="button" class="ghost-button small-button" id="closeDialogButton">Close</button>
+      </div>
+      <form id="editForm" class="dialog-form">
+        <input type="hidden" id="editTaskId">
+        <div class="field span-6">
+          <label for="editTaskTitle">Title</label>
+          <input id="editTaskTitle" type="text" required maxlength="120">
+        </div>
+        <div class="field span-3">
+          <label for="editTaskCategory">Category</label>
+          <select id="editTaskCategory" required></select>
+        </div>
+        <div class="field span-3">
+          <label for="editTaskUrgency">Urgency</label>
+          <select id="editTaskUrgency">
+            <option value="Low">Low</option>
+            <option value="Mid">Mid</option>
+            <option value="Critical">Critical</option>
+          </select>
+        </div>
+        <div class="field span-8">
+          <label for="editTaskJira">Jira URL</label>
+          <input id="editTaskJira" type="text" inputmode="url" placeholder="https://jira.example.com/browse/ABC-123">
+        </div>
+        <div class="field span-4">
+          <label for="editTaskStatus">Status</label>
+          <select id="editTaskStatus">
+            <option value="todo">To-Do</option>
+            <option value="progress">In-progress</option>
+            <option value="done">Done</option>
+          </select>
+        </div>
+        <div class="field span-12">
+          <label for="editTaskDescription">Description</label>
+          <textarea id="editTaskDescription" maxlength="800"></textarea>
+        </div>
+        <div class="field span-12">
+          <label>Comments</label>
+          <div class="comments" id="commentsList"></div>
+        </div>
+        <div class="field span-12">
+          <label for="newComment">Add comment</label>
+          <textarea id="newComment" maxlength="600" placeholder="Write an update"></textarea>
+        </div>
+        <div class="dialog-actions span-12">
+          <button type="button" class="danger-button" id="deleteTaskButton">Delete task</button>
+          <button type="button" class="ghost-button" id="addCommentButton">Add comment</button>
+          <button type="submit">Save changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="screen-reader" aria-live="polite" id="liveRegion"></div>
+  <script>
+    const STORAGE_KEY = 'pm-board-state-v1';
+    const DEFAULT_CATEGORIES = ['HB SDK', 'PM', 'Magnite WL SDK', 'Media'];
+    const STATUSES = [
+      { id: 'todo', label: 'To-Do' },
+      { id: 'progress', label: 'In-progress' },
+      { id: 'done', label: 'Done' }
+    ];
+
+    const state = loadState();
+    let archiveOpen = false;
+
+    const elements = {
+      taskForm: document.querySelector('#taskForm'),
+      categoryForm: document.querySelector('#categoryForm'),
+      taskCategory: document.querySelector('#taskCategory'),
+      editTaskCategory: document.querySelector('#editTaskCategory'),
+      categoryFilter: document.querySelector('#categoryFilter'),
+      urgencyFilter: document.querySelector('#urgencyFilter'),
+      searchInput: document.querySelector('#searchInput'),
+      resetFiltersButton: document.querySelector('#resetFiltersButton'),
+      toggleTaskFormButton: document.querySelector('#toggleTaskFormButton'),
+      toggleTaskFormButtonBottom: document.querySelector('#toggleTaskFormButtonBottom'),
+      toggleCategoryFormButton: document.querySelector('#toggleCategoryFormButton'),
+      toggleCategoryFormButtonBottom: document.querySelector('#toggleCategoryFormButtonBottom'),
+      toggleArchiveButton: document.querySelector('#toggleArchiveButton'),
+      archiveList: document.querySelector('#archiveList'),
+      editDialog: document.querySelector('#editDialog'),
+      closeDialogButton: document.querySelector('#closeDialogButton'),
+      editForm: document.querySelector('#editForm'),
+      editTaskId: document.querySelector('#editTaskId'),
+      editTaskTitle: document.querySelector('#editTaskTitle'),
+      editTaskDescription: document.querySelector('#editTaskDescription'),
+      editTaskJira: document.querySelector('#editTaskJira'),
+      editTaskUrgency: document.querySelector('#editTaskUrgency'),
+      editTaskStatus: document.querySelector('#editTaskStatus'),
+      commentsList: document.querySelector('#commentsList'),
+      newComment: document.querySelector('#newComment'),
+      addCommentButton: document.querySelector('#addCommentButton'),
+      deleteTaskButton: document.querySelector('#deleteTaskButton'),
+      liveRegion: document.querySelector('#liveRegion')
+    };
+
+    function loadState() {
+      const fallback = { tasks: [], categories: [...DEFAULT_CATEGORIES] };
+      try {
+        const stored = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        if (!stored || !Array.isArray(stored.tasks) || !Array.isArray(stored.categories)) {
+          return fallback;
+        }
+        return {
+          tasks: stored.tasks.map(normalizeTask),
+          categories: mergeCategories(stored.categories)
+        };
+      } catch (error) {
+        return fallback;
+      }
+    }
+
+    function normalizeTask(task) {
+      return {
+        id: task.id || createId(),
+        title: task.title || 'Untitled task',
+        description: task.description || '',
+        category: task.category || DEFAULT_CATEGORIES[0],
+        urgency: ['Low', 'Mid', 'Critical'].includes(task.urgency) ? task.urgency : 'Low',
+        jiraUrl: task.jiraUrl || '',
+        status: STATUSES.some(status => status.id === task.status) ? task.status : 'todo',
+        archived: Boolean(task.archived),
+        comments: Array.isArray(task.comments) ? task.comments : [],
+        createdAt: task.createdAt || new Date().toISOString(),
+        updatedAt: task.updatedAt || new Date().toISOString()
+      };
+    }
+
+    function mergeCategories(categories) {
+      const merged = [...DEFAULT_CATEGORIES, ...categories]
+        .map(category => String(category).trim())
+        .filter(Boolean);
+      return [...new Set(merged)];
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function render() {
+      renderCategoryOptions();
+      renderBoard();
+    }
+
+    function renderCategoryOptions() {
+      const optionMarkup = state.categories
+        .map(category => `<option value="${escapeAttribute(category)}">${escapeHtml(category)}</option>`)
+        .join('');
+      const currentFilter = elements.categoryFilter.value || 'all';
+      elements.taskCategory.innerHTML = optionMarkup;
+      elements.editTaskCategory.innerHTML = optionMarkup;
+      elements.categoryFilter.innerHTML = '<option value="all">All categories</option>' + optionMarkup;
+      elements.categoryFilter.value = state.categories.includes(currentFilter) ? currentFilter : 'all';
+    }
+
+    function renderBoard() {
+      const filteredTasks = state.tasks.filter(task => !task.archived && matchesFilters(task));
+
+      STATUSES.forEach(status => {
+        const list = document.querySelector(`#${status.id}List`);
+        const tasks = filteredTasks.filter(task => task.status === status.id);
+        list.innerHTML = tasks.length
+          ? tasks.map(task => createTaskCard(task)).join('')
+          : `<div class="empty-state">No ${status.label} tasks</div>`;
+        document.querySelector(`#${status.id}Count`).textContent = tasks.length;
+      });
+
+      const archivedTasks = state.tasks.filter(task => task.archived && task.status === 'done' && matchesFilters(task));
+      elements.archiveList.innerHTML = archivedTasks.length
+        ? archivedTasks.map(task => createTaskCard(task, true)).join('')
+        : '<div class="empty-state">No archived Done tasks</div>';
+      elements.toggleArchiveButton.textContent = archiveOpen
+        ? `Hide archived (${archivedTasks.length})`
+        : `Show archived (${archivedTasks.length})`;
+      elements.archiveList.hidden = !archiveOpen;
+      attachCardEvents();
+    }
+
+    function createTaskCard(task, archived = false) {
+      const commentCount = task.comments.length;
+      const jiraMarkup = task.jiraUrl
+        ? `<button type="button" class="ghost-button small-button" data-action="jira" data-url="${escapeAttribute(task.jiraUrl)}">Open Jira</button>`
+        : '<span class="pill">No Jira link</span>';
+      const archiveAction = task.status === 'done'
+        ? `<button type="button" class="ghost-button small-button" data-action="${archived ? 'restore' : 'archive'}" data-id="${task.id}">${archived ? 'Restore' : 'Archive'}</button>`
+        : '';
+
+      return `
+        <article class="task-card" draggable="${archived ? 'false' : 'true'}" data-id="${task.id}" data-urgency="${escapeAttribute(task.urgency)}">
+          <div class="card-top">
+            <h3 class="task-title">${escapeHtml(task.title)}</h3>
+            <span class="pill urgency-${task.urgency.toLowerCase()}">${escapeHtml(task.urgency)}</span>
+          </div>
+          <p class="task-description">${escapeHtml(task.description || 'No description')}</p>
+          <div class="meta-row">
+            <span class="pill">${escapeHtml(task.category)}</span>
+            <span class="pill">${commentCount} ${commentCount === 1 ? 'comment' : 'comments'}</span>
+            ${jiraMarkup}
+          </div>
+          <div class="card-actions">
+            <label class="screen-reader" for="status-${task.id}">Task status</label>
+            <select class="status-select" id="status-${task.id}" data-action="status" data-id="${task.id}">
+              ${STATUSES.map(status => `<option value="${status.id}" ${task.status === status.id ? 'selected' : ''}>${status.label}</option>`).join('')}
+            </select>
+            <button type="button" class="ghost-button small-button" data-action="edit" data-id="${task.id}">Edit</button>
+            ${archiveAction}
+          </div>
+        </article>
+      `;
+    }
+
+    function matchesFilters(task) {
+      const search = elements.searchInput.value.trim().toLowerCase();
+      const category = elements.categoryFilter.value;
+      const urgency = elements.urgencyFilter.value;
+      const commentText = task.comments.map(comment => comment.text).join(' ');
+      const searchableText = [
+        task.title,
+        task.description,
+        task.jiraUrl,
+        task.category,
+        task.urgency,
+        commentText
+      ].join(' ').toLowerCase();
+
+      return (!search || searchableText.includes(search))
+        && (category === 'all' || task.category === category)
+        && (urgency === 'all' || task.urgency === urgency);
+    }
+
+    function attachCardEvents() {
+      document.querySelectorAll('.task-card').forEach(card => {
+        card.addEventListener('dragstart', handleDragStart);
+        card.addEventListener('dragend', handleDragEnd);
+      });
+
+      document.querySelectorAll('[data-action="edit"]').forEach(button => {
+        button.addEventListener('click', () => openEditDialog(button.dataset.id));
+      });
+
+      document.querySelectorAll('[data-action="archive"]').forEach(button => {
+        button.addEventListener('click', () => setArchiveState(button.dataset.id, true));
+      });
+
+      document.querySelectorAll('[data-action="restore"]').forEach(button => {
+        button.addEventListener('click', () => setArchiveState(button.dataset.id, false));
+      });
+
+      document.querySelectorAll('[data-action="jira"]').forEach(button => {
+        button.addEventListener('click', () => openJiraLink(button.dataset.url));
+      });
+
+      document.querySelectorAll('[data-action="status"]').forEach(select => {
+        select.addEventListener('change', () => updateStatus(select.dataset.id, select.value));
+      });
+    }
+
+    function handleDragStart(event) {
+      const card = event.currentTarget;
+      if (card.getAttribute('draggable') !== 'true') {
+        event.preventDefault();
+        return;
+      }
+      event.dataTransfer.setData('text/plain', card.dataset.id);
+      event.dataTransfer.effectAllowed = 'move';
+      card.classList.add('dragging');
+    }
+
+    function handleDragEnd(event) {
+      event.currentTarget.classList.remove('dragging');
+      document.querySelectorAll('.column').forEach(column => column.classList.remove('drag-over'));
+    }
+
+    document.querySelectorAll('.column').forEach(column => {
+      column.addEventListener('dragover', event => {
+        event.preventDefault();
+        column.classList.add('drag-over');
+      });
+      column.addEventListener('dragleave', () => {
+        column.classList.remove('drag-over');
+      });
+      column.addEventListener('drop', event => {
+        event.preventDefault();
+        column.classList.remove('drag-over');
+        const taskId = event.dataTransfer.getData('text/plain');
+        updateStatus(taskId, column.dataset.status);
+      });
+    });
+
+    elements.taskForm.addEventListener('submit', event => {
+      event.preventDefault();
+      const form = new FormData(elements.taskForm);
+      const now = new Date().toISOString();
+      state.tasks.unshift({
+        id: createId(),
+        title: form.get('title').trim(),
+        description: form.get('description').trim(),
+        category: form.get('category'),
+        urgency: form.get('urgency'),
+        jiraUrl: normalizeUrl(form.get('jiraUrl').trim()),
+        status: form.get('status'),
+        archived: false,
+        comments: [],
+        createdAt: now,
+        updatedAt: now
+      });
+      saveState();
+      elements.taskForm.reset();
+      elements.taskCategory.value = state.categories[0];
+      setPanelOpen(elements.taskForm, false);
+      announce('Task added.');
+      render();
+    });
+
+    elements.categoryForm.addEventListener('submit', event => {
+      event.preventDefault();
+      const input = document.querySelector('#newCategory');
+      const category = input.value.trim();
+      if (!category) {
+        return;
+      }
+
+      if (!state.categories.some(item => item.toLowerCase() === category.toLowerCase())) {
+        state.categories.push(category);
+        saveState();
+        announce('Category added.');
+      }
+      input.value = '';
+      setPanelOpen(elements.categoryForm, false);
+      render();
+    });
+
+    elements.searchInput.addEventListener('input', renderBoard);
+    elements.categoryFilter.addEventListener('change', renderBoard);
+    elements.urgencyFilter.addEventListener('change', renderBoard);
+
+    elements.toggleTaskFormButton.addEventListener('click', () => togglePanel(elements.taskForm, true));
+    elements.toggleTaskFormButtonBottom.addEventListener('click', () => togglePanel(elements.taskForm, true));
+    elements.toggleCategoryFormButton.addEventListener('click', () => togglePanel(elements.categoryForm, true));
+    elements.toggleCategoryFormButtonBottom.addEventListener('click', () => togglePanel(elements.categoryForm, true));
+
+    elements.resetFiltersButton.addEventListener('click', () => {
+      elements.searchInput.value = '';
+      elements.categoryFilter.value = 'all';
+      elements.urgencyFilter.value = 'all';
+      renderBoard();
+    });
+
+    elements.toggleArchiveButton.addEventListener('click', () => {
+      archiveOpen = !archiveOpen;
+      renderBoard();
+    });
+
+    elements.closeDialogButton.addEventListener('click', closeEditDialog);
+    elements.editDialog.addEventListener('click', event => {
+      if (event.target === elements.editDialog) {
+        closeEditDialog();
+      }
+    });
+
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && elements.editDialog.classList.contains('open')) {
+        closeEditDialog();
+      }
+    });
+
+    elements.editForm.addEventListener('submit', event => {
+      event.preventDefault();
+      saveEditedTask();
+    });
+
+    elements.addCommentButton.addEventListener('click', () => {
+      const task = getEditedTask();
+      const text = elements.newComment.value.trim();
+      if (!task || !text) {
+        return;
+      }
+
+      task.comments.push({
+        id: createId(),
+        text,
+        createdAt: new Date().toISOString()
+      });
+      task.updatedAt = new Date().toISOString();
+      elements.newComment.value = '';
+      saveState();
+      renderComments(task);
+      renderBoard();
+      announce('Comment added.');
+    });
+
+    elements.deleteTaskButton.addEventListener('click', () => {
+      const task = getEditedTask();
+      if (!task) {
+        return;
+      }
+
+      const confirmed = confirm(`Delete "${task.title}"?`);
+      if (!confirmed) {
+        return;
+      }
+
+      state.tasks = state.tasks.filter(item => item.id !== task.id);
+      saveState();
+      closeEditDialog();
+      render();
+      announce('Task deleted.');
+    });
+
+    function openEditDialog(taskId) {
+      const task = state.tasks.find(item => item.id === taskId);
+      if (!task) {
+        return;
+      }
+
+      elements.editTaskId.value = task.id;
+      elements.editTaskTitle.value = task.title;
+      elements.editTaskDescription.value = task.description;
+      elements.editTaskCategory.value = task.category;
+      elements.editTaskUrgency.value = task.urgency;
+      elements.editTaskJira.value = task.jiraUrl;
+      elements.editTaskStatus.value = task.status;
+      elements.newComment.value = '';
+      renderComments(task);
+      elements.editDialog.classList.add('open');
+      elements.editTaskTitle.focus();
+    }
+
+    function closeEditDialog() {
+      elements.editDialog.classList.remove('open');
+      elements.editForm.reset();
+      elements.commentsList.innerHTML = '';
+    }
+
+    function renderComments(task) {
+      elements.commentsList.innerHTML = task.comments.length
+        ? task.comments.map(comment => `
+            <div class="comment">
+              <time datetime="${escapeAttribute(comment.createdAt)}">${formatDate(comment.createdAt)}</time>
+              <p>${escapeHtml(comment.text)}</p>
+            </div>
+          `).join('')
+        : '<div class="empty-state">No comments yet</div>';
+    }
+
+    function saveEditedTask() {
+      const task = getEditedTask();
+      if (!task) {
+        return;
+      }
+
+      task.title = elements.editTaskTitle.value.trim();
+      task.description = elements.editTaskDescription.value.trim();
+      task.category = elements.editTaskCategory.value;
+      task.urgency = elements.editTaskUrgency.value;
+      task.jiraUrl = normalizeUrl(elements.editTaskJira.value.trim());
+      task.status = elements.editTaskStatus.value;
+      task.archived = task.status === 'done' ? task.archived : false;
+      task.updatedAt = new Date().toISOString();
+      saveState();
+      closeEditDialog();
+      render();
+      announce('Task updated.');
+    }
+
+    function getEditedTask() {
+      return state.tasks.find(task => task.id === elements.editTaskId.value);
+    }
+
+    function updateStatus(taskId, status) {
+      const task = state.tasks.find(item => item.id === taskId);
+      if (!task || !STATUSES.some(item => item.id === status)) {
+        return;
+      }
+
+      task.status = status;
+      task.archived = false;
+      task.updatedAt = new Date().toISOString();
+      saveState();
+      renderBoard();
+      announce(`Task moved to ${STATUSES.find(item => item.id === status).label}.`);
+    }
+
+    function setArchiveState(taskId, archived) {
+      const task = state.tasks.find(item => item.id === taskId);
+      if (!task) {
+        return;
+      }
+
+      task.archived = archived;
+      task.status = 'done';
+      task.updatedAt = new Date().toISOString();
+      saveState();
+      renderBoard();
+      announce(archived ? 'Task archived.' : 'Task restored.');
+    }
+
+    function togglePanel(panel, focusFirstField = false) {
+      const willOpen = panel.hidden;
+      setPanelOpen(panel, willOpen);
+      if (willOpen && focusFirstField) {
+        const firstField = panel.querySelector('input, select, textarea, button');
+        if (firstField) {
+          firstField.focus();
+        }
+      }
+    }
+
+    function setPanelOpen(panel, isOpen) {
+      panel.hidden = !isOpen;
+      updateToggleLabels();
+    }
+
+    function updateToggleLabels() {
+      const taskLabel = elements.taskForm.hidden ? 'New task' : 'Close task form';
+      const categoryLabel = elements.categoryForm.hidden ? 'Add category' : 'Close category form';
+      elements.toggleTaskFormButton.textContent = taskLabel;
+      elements.toggleTaskFormButtonBottom.textContent = taskLabel;
+      elements.toggleCategoryFormButton.textContent = categoryLabel;
+      elements.toggleCategoryFormButtonBottom.textContent = categoryLabel;
+    }
+
+    function normalizeUrl(value) {
+      if (!value) {
+        return '';
+      }
+      if (/^https?:\/\//i.test(value)) {
+        return value;
+      }
+      return `https://${value}`;
+    }
+
+    function openJiraLink(url) {
+      const normalizedUrl = normalizeUrl(url);
+      const opened = window.open(normalizedUrl, '_blank', 'noopener,noreferrer');
+      if (!opened) {
+        window.location.href = normalizedUrl;
+      }
+    }
+
+    function createId() {
+      if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+        return window.crypto.randomUUID();
+      }
+      return `task-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    }
+
+    function formatDate(value) {
+      return new Intl.DateTimeFormat(undefined, {
+        dateStyle: 'medium',
+        timeStyle: 'short'
+      }).format(new Date(value));
+    }
+
+    function announce(message) {
+      elements.liveRegion.textContent = message;
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    function escapeAttribute(value) {
+      return escapeHtml(value);
+    }
+
+    render();
+  </script>
+</body>
+</html>
