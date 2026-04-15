@@ -241,19 +241,19 @@
     .task-list {
       display: grid;
       align-content: start;
-      gap: 10px;
-      min-height: 300px;
+      gap: 8px;
+      min-height: 220px;
     }
 
     .task-card {
       display: grid;
-      gap: 10px;
+      gap: 7px;
       border: 1px solid var(--line);
       border-radius: 8px;
-      padding: 12px;
+      padding: 9px 10px;
       background: #ffffff;
-      box-shadow: 0 8px 18px rgba(38, 48, 51, 0.09);
-      border-top: 5px solid var(--yellow);
+      box-shadow: 0 5px 12px rgba(38, 48, 51, 0.08);
+      border-top: 4px solid var(--yellow);
     }
 
     .task-card[data-urgency="Low"] { border-top-color: var(--mint); }
@@ -264,37 +264,56 @@
     .task-card.dragging { opacity: 0.55; }
 
     .task-title {
+      font-size: 15px;
       font-weight: 800;
+      line-height: 1.22;
       overflow-wrap: anywhere;
     }
 
     .task-description {
       color: var(--muted);
+      display: -webkit-box;
+      font-size: 13px;
+      line-height: 1.35;
       overflow-wrap: anywhere;
+      overflow: hidden;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
     }
 
     .pill {
       display: inline-flex;
       align-items: center;
-      min-height: 28px;
+      min-height: 24px;
       border: 1px solid rgba(32, 49, 53, 0.1);
       border-radius: 8px;
-      padding: 4px 8px;
+      padding: 3px 7px;
       background: #f7fcfd;
       color: var(--text);
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 700;
     }
 
     .urgency-low { color: var(--low); }
     .urgency-mid { color: var(--mid); }
     .urgency-critical { color: var(--critical); }
-    .status-select { min-width: 132px; }
+    .card-actions {
+      display: grid;
+      grid-template-columns: minmax(120px, 1fr) auto auto;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .status-select {
+      min-width: 0;
+      min-height: 32px;
+      padding: 5px 8px;
+    }
 
     .small-button {
-      min-height: 32px;
-      padding: 5px 9px;
-      font-size: 13px;
+      min-height: 30px;
+      padding: 4px 8px;
+      font-size: 12px;
     }
 
     .jira-link {
@@ -309,12 +328,12 @@
     .empty-state {
       display: grid;
       place-items: center;
-      min-height: 120px;
+      min-height: 88px;
       border: 1px dashed rgba(103, 113, 116, 0.45);
       border-radius: 8px;
       color: var(--muted);
       text-align: center;
-      padding: 16px;
+      padding: 12px;
       background: rgba(255, 255, 255, 0.55);
     }
 
