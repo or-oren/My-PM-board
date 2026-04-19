@@ -370,6 +370,24 @@
       color: #ffffff;
     }
 
+    .archive-drop-zone {
+      border: 1px dashed #454a6c;
+      border-radius: 4px;
+      margin: 0 8px 8px;
+      padding: 8px;
+      color: var(--muted);
+      background: rgba(25, 28, 51, 0.5);
+      font-size: 12px;
+      text-align: center;
+      transition: border-color 140ms ease, background 140ms ease, color 140ms ease;
+    }
+
+    .archive-drop-zone.drag-over {
+      border-color: var(--mint);
+      color: #ffffff;
+      background: rgba(25, 210, 123, 0.16);
+    }
+
     .archive-list[hidden] { display: none; }
 
     .dialog-backdrop {
@@ -587,6 +605,7 @@
             <strong>Archived Done</strong>
             <button type="button" id="toggleArchiveButton" class="ghost-button small-button">Show archived</button>
           </div>
+          <div class="archive-drop-zone" id="archiveDropZone">Drop Done tasks here to archive</div>
           <div class="task-list archive-list" id="archiveList" hidden></div>
         </div>
       </section>
@@ -675,6 +694,7 @@
       toggleTaskFormButton: document.querySelector('#toggleTaskFormButton'),
       toggleCategoryFormButton: document.querySelector('#toggleCategoryFormButton'),
       toggleArchiveButton: document.querySelector('#toggleArchiveButton'),
+      archiveDropZone: document.querySelector('#archiveDropZone'),
       archiveList: document.querySelector('#archiveList'),
       editDialog: document.querySelector('#editDialog'),
       closeDialogButton: document.querySelector('#closeDialogButton'),
@@ -878,6 +898,7 @@
     function handleDragEnd(event) {
       event.currentTarget.classList.remove('dragging');
       document.querySelectorAll('.column').forEach(column => column.classList.remove('drag-over'));
+      elements.archiveDropZone.classList.remove('drag-over');
     }
 
     document.querySelectorAll('.column').forEach(column => {
@@ -894,6 +915,23 @@
         const taskId = event.dataTransfer.getData('text/plain');
         updateStatus(taskId, column.dataset.status);
       });
+    });
+
+    elements.archiveDropZone.addEventListener('dragover', event => {
+      event.preventDefault();
+      elements.archiveDropZone.classList.add('drag-over');
+    });
+
+    elements.archiveDropZone.addEventListener('dragleave', () => {
+      elements.archiveDropZone.classList.remove('drag-over');
+    });
+
+    elements.archiveDropZone.addEventListener('drop', event => {
+      event.preventDefault();
+      event.stopPropagation();
+      elements.archiveDropZone.classList.remove('drag-over');
+      const taskId = event.dataTransfer.getData('text/plain');
+      archiveDroppedTask(taskId);
     });
 
     elements.taskForm.addEventListener('submit', event => {
@@ -1100,6 +1138,20 @@
       saveState();
       renderBoard();
       announce(archived ? 'Task archived.' : 'Task restored.');
+    }
+
+    function archiveDroppedTask(taskId) {
+      const task = state.tasks.find(item => item.id === taskId);
+      if (!task) {
+        return;
+      }
+
+      if (task.status !== 'done') {
+        announce('Move the task to Done before archiving.');
+        return;
+      }
+
+      setArchiveState(taskId, true);
     }
 
     function togglePanel(panel, focusFirstField = false) {
