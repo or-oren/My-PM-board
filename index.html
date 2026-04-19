@@ -120,7 +120,7 @@
     h1 { font-size: 28px; line-height: 1.15; }
     .subtitle { color: var(--muted); margin-top: 5px; }
 
-    .toolbar, .task-form, .category-form, .action-strip {
+    .toolbar, .task-form, .category-form {
       display: grid;
       gap: 10px;
       grid-template-columns: repeat(12, minmax(0, 1fr));
@@ -132,19 +132,7 @@
       box-shadow: 0 10px 24px rgba(32, 49, 53, 0.08);
     }
 
-    .action-strip {
-      align-items: center;
-      background: linear-gradient(90deg, #ffffff, #effbfc);
-    }
-
-    .action-copy {
-      grid-column: span 7;
-      color: var(--muted);
-      font-weight: 700;
-    }
-
     .action-buttons {
-      grid-column: span 5;
       display: flex;
       flex-wrap: wrap;
       justify-content: flex-end;
@@ -195,11 +183,11 @@
 
     .column {
       display: grid;
-      gap: 12px;
-      min-height: 420px;
+      gap: 9px;
+      min-height: 340px;
       border: 1px solid rgba(32, 49, 53, 0.12);
       border-radius: 8px;
-      padding: 14px;
+      padding: 12px;
       box-shadow: 0 12px 26px rgba(32, 49, 53, 0.08);
       transition: border-color 140ms ease, box-shadow 140ms ease;
     }
@@ -230,8 +218,8 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      min-width: 30px;
-      height: 30px;
+      min-width: 26px;
+      height: 26px;
       border-radius: 8px;
       background: rgba(255, 255, 255, 0.78);
       border: 1px solid var(--line);
@@ -241,19 +229,20 @@
     .task-list {
       display: grid;
       align-content: start;
-      gap: 8px;
-      min-height: 220px;
+      gap: 7px;
+      min-height: 150px;
     }
 
     .task-card {
       display: grid;
-      gap: 7px;
+      gap: 5px;
       border: 1px solid var(--line);
       border-radius: 8px;
-      padding: 9px 10px;
+      padding: 7px 8px;
       background: #ffffff;
-      box-shadow: 0 5px 12px rgba(38, 48, 51, 0.08);
-      border-top: 4px solid var(--yellow);
+      box-shadow: 0 3px 8px rgba(38, 48, 51, 0.07);
+      border-top: 3px solid var(--yellow);
+      cursor: pointer;
     }
 
     .task-card[data-urgency="Low"] { border-top-color: var(--mint); }
@@ -263,34 +252,39 @@
     .task-card[draggable="true"] { cursor: grab; }
     .task-card.dragging { opacity: 0.55; }
 
+    .task-card .card-top,
+    .task-card .meta-row {
+      gap: 5px;
+    }
+
     .task-title {
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 800;
-      line-height: 1.22;
+      line-height: 1.15;
       overflow-wrap: anywhere;
     }
 
     .task-description {
       color: var(--muted);
       display: -webkit-box;
-      font-size: 13px;
-      line-height: 1.35;
+      font-size: 12px;
+      line-height: 1.25;
       overflow-wrap: anywhere;
       overflow: hidden;
       -webkit-box-orient: vertical;
-      -webkit-line-clamp: 2;
+      -webkit-line-clamp: 1;
     }
 
     .pill {
       display: inline-flex;
       align-items: center;
-      min-height: 24px;
+      min-height: 20px;
       border: 1px solid rgba(32, 49, 53, 0.1);
       border-radius: 8px;
-      padding: 3px 7px;
+      padding: 2px 6px;
       background: #f7fcfd;
       color: var(--text);
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 700;
     }
 
@@ -299,21 +293,22 @@
     .urgency-critical { color: var(--critical); }
     .card-actions {
       display: grid;
-      grid-template-columns: minmax(120px, 1fr) auto auto;
-      gap: 6px;
+      grid-template-columns: minmax(96px, 1fr) auto auto;
+      gap: 5px;
       align-items: center;
     }
 
     .status-select {
       min-width: 0;
-      min-height: 32px;
-      padding: 5px 8px;
+      min-height: 28px;
+      padding: 3px 7px;
+      font-size: 12px;
     }
 
     .small-button {
-      min-height: 30px;
-      padding: 4px 8px;
-      font-size: 12px;
+      min-height: 26px;
+      padding: 3px 7px;
+      font-size: 11px;
     }
 
     .jira-link {
@@ -328,12 +323,12 @@
     .empty-state {
       display: grid;
       place-items: center;
-      min-height: 88px;
+      min-height: 68px;
       border: 1px dashed rgba(103, 113, 116, 0.45);
       border-radius: 8px;
       color: var(--muted);
       text-align: center;
-      padding: 12px;
+      padding: 10px;
       background: rgba(255, 255, 255, 0.55);
     }
 
@@ -432,8 +427,7 @@
     @media (max-width: 980px) {
       .board { grid-template-columns: 1fr; }
       .column { min-height: auto; }
-      .toolbar, .task-form, .category-form, .dialog-form, .action-strip { grid-template-columns: 1fr; }
-      .action-copy, .action-buttons { grid-column: span 1; }
+      .toolbar, .task-form, .category-form, .dialog-form { grid-template-columns: 1fr; }
       .action-buttons { justify-content: stretch; }
       .action-buttons > * { flex: 1; }
       .span-2, .span-3, .span-4, .span-5, .span-6, .span-8, .span-12 {
@@ -486,14 +480,6 @@
           </select>
         </div>
         <button type="button" id="resetFiltersButton" class="ghost-button span-1">Reset</button>
-      </div>
-
-      <div class="action-strip">
-        <p class="action-copy">Task flow</p>
-        <div class="action-buttons">
-          <button type="button" id="toggleTaskFormButtonBottom" class="accent-button">New task</button>
-          <button type="button" id="toggleCategoryFormButtonBottom" class="ghost-button">Add category</button>
-        </div>
       </div>
 
       <form id="taskForm" class="task-form collapsible-panel" hidden>
@@ -656,9 +642,7 @@
       searchInput: document.querySelector('#searchInput'),
       resetFiltersButton: document.querySelector('#resetFiltersButton'),
       toggleTaskFormButton: document.querySelector('#toggleTaskFormButton'),
-      toggleTaskFormButtonBottom: document.querySelector('#toggleTaskFormButtonBottom'),
       toggleCategoryFormButton: document.querySelector('#toggleCategoryFormButton'),
-      toggleCategoryFormButtonBottom: document.querySelector('#toggleCategoryFormButtonBottom'),
       toggleArchiveButton: document.querySelector('#toggleArchiveButton'),
       archiveList: document.querySelector('#archiveList'),
       editDialog: document.querySelector('#editDialog'),
@@ -813,6 +797,7 @@
 
     function attachCardEvents() {
       document.querySelectorAll('.task-card').forEach(card => {
+        card.addEventListener('click', handleCardClick);
         card.addEventListener('dragstart', handleDragStart);
         card.addEventListener('dragend', handleDragEnd);
       });
@@ -836,6 +821,16 @@
       document.querySelectorAll('[data-action="status"]').forEach(select => {
         select.addEventListener('change', () => updateStatus(select.dataset.id, select.value));
       });
+    }
+
+    function handleCardClick(event) {
+      const interactiveElement = event.target.closest('button, select, input, textarea, a, label');
+      if (interactiveElement) {
+        return;
+      }
+
+      const card = event.currentTarget;
+      openEditDialog(card.dataset.id);
     }
 
     function handleDragStart(event) {
@@ -918,9 +913,7 @@
     elements.urgencyFilter.addEventListener('change', renderBoard);
 
     elements.toggleTaskFormButton.addEventListener('click', () => togglePanel(elements.taskForm, true));
-    elements.toggleTaskFormButtonBottom.addEventListener('click', () => togglePanel(elements.taskForm, true));
     elements.toggleCategoryFormButton.addEventListener('click', () => togglePanel(elements.categoryForm, true));
-    elements.toggleCategoryFormButtonBottom.addEventListener('click', () => togglePanel(elements.categoryForm, true));
 
     elements.resetFiltersButton.addEventListener('click', () => {
       elements.searchInput.value = '';
@@ -1098,9 +1091,7 @@
       const taskLabel = elements.taskForm.hidden ? 'New task' : 'Close task form';
       const categoryLabel = elements.categoryForm.hidden ? 'Add category' : 'Close category form';
       elements.toggleTaskFormButton.textContent = taskLabel;
-      elements.toggleTaskFormButtonBottom.textContent = taskLabel;
       elements.toggleCategoryFormButton.textContent = categoryLabel;
-      elements.toggleCategoryFormButtonBottom.textContent = categoryLabel;
     }
 
     function normalizeUrl(value) {
